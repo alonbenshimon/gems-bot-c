@@ -137,3 +137,14 @@ def test_okx_private_connection():
     r = requests.get(BASE_OKX + path, headers=headers, timeout=20)
     return r.status_code
 
+
+if __name__ == "__main__":
+    print("Bot-C started...")
+    while True:
+        try:
+            status = test_okx_private_connection()
+            print("OKX status:", status)
+        except Exception as e:
+            print("Error:", e)
+        time.sleep(30)
+
