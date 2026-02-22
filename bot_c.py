@@ -105,3 +105,35 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ================= PRIVATE OKX TEST =================
+
+import base64
+import hmac
+import hashlib
+import datetime
+
+OKX_API_KEY = os.environ.get("OKX_API_KEY", "").strip()
+OKX_SECRET = os.environ.get("OKX_SECRET", "").strip()
+OKX_PASSPHRASE = os.environ.get("OKX_PASSPHRASE", "").strip()
+
+def okx_private_headers(method, path, body=""):
+    timestamp = datetime.datetime.utcnow().isoformat(timespec="milliseconds") + "Z"
+    message = timestamp + method + path + body
+    mac = hmac.new(OKX_SECRET.encode(), message.encode(), hashlib.sha256)
+    sign = base64.b64encode(mac.digest()).decode()
+
+    return {
+        "OK-ACCESS-KEY": OKX_API_KEY,
+        "OK-ACCESS-SIGN": sign,
+        "OK-ACCESS-TIMESTAMP": timestamp,
+        "OK-ACCESS-PASSPHRASE": OKX_PASSPHRASE,
+        "Content-Type": "application/json"
+    }
+
+def test_okx_private_connection():
+    path = "/api/v5/account/balance"
+    headers = okx_private_headers("GET", path)
+    r = requests.get(BASE_OKX + path, headers=headers, timeout=20)
+    return r.status_code
+
